@@ -1,0 +1,56 @@
+* {
+  box-sizing: border-box;
+}
+html {
+  font-size: 62.5%;
+}
+body {
+  font-size: 1.6rem;
+  font-family: "Sen", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: weight;
+  font-style: normal;
+}
+.main-content {
+  width: 1170px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: calc(100% - 48px);
+}
+a {
+  text-decoration: none;
+}
+.header .body {
+  display: flex;
+}
+.nav ul {
+  display: flex;
+}
+.logo {
+  width: 100px;
+}
+.nav {
+  margin-left: auto;
+}
+.nav a {
+  color: rgb(40, 40, 40);
+  padding: 8px 21px;
+  position: relative;
+}
+.nav a:hover {
+  color: black;
+  text-shadow: 1px 0px 0px currentColor;
+}
+.nav li.active a::after {
+  display: block;
+  content: "";
+  left: 21px;
+  bottom: 6px;
+  position: absolute;
+  width: 12px;
+  height: 2px;
+  background-color: black;
+}
+.active {
+  font-weight: bold;
+}
