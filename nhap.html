@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cờ Tướng - Demo (HTML/CSS/JS)</title>
+    <style>
+      :root {
+        --cell-size: 56px;
+        --board-bg: #f7f0d9;
+        --line: #333;
+        --red: #c0392b;
+        --black: #2c3e50;
+      }
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto;
+        padding: 20px;
+        background: #fafafa;
+      }
+      .wrap {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+      }
+      .board {
+        background: var(--board-bg);
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(9, var(--cell-size));
+        grid-template-rows: repeat(10, var(--cell-size));
+        gap: 0;
+        position: relative;
+      }
+      .cell {
+        width: var(--cell-size);
+        height: var(--cell-size);
+        box-sizing: border-box;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        cursor: pointer;
+        user-select: none;
+      }
+      /* draw subtle cross lines like bàn cờ */
+      .cell::before {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+      }
+      .piece {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 16px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      }
+      .r {
+        background: var(--red);
+        color: #fff;
+      }
+      .b {
+        background: var(--black);
+        color: #fff;
+      }
+      .selected {
+        outline: 3px solid gold;
+        transform: scale(1.03);
+      }
+      .controls {
+        min-width: 320px;
+      }
+      button {
+        display: block;
+        margin: 8px 0;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 0;
+        background: #2d9cdb;
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .log {
+        background: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        max-height: 260px;
+        overflow: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th,
+      td {
+        padding: 6px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+      .small {
+        font-size: 13px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>
+      Cờ Tướng — Demo HTML/CSS/JS (2-player trên cùng máy + mô phỏng giải)
+    </h2>
+    <div class="wrap">
+      <div class="board">
+        <div id="grid" class="grid"></div>
+      </div>
+
+      <div class="controls">
+        <button id="newGameBtn">New Game</button>
+        <button id="simTournamentBtn">Simulate Tournament (8 players)</button>
+        <div class="log" id="log"></div>
+        <h4 class="small">Hướng dẫn</h4>
+        <div class="small">
+          - Click 1 quân để chọn, click ô đích để di chuyển.<br />
+          - Hỗ trợ luật di chuyển cơ bản (xe, pháo, mã, tượng, sĩ, tướng, tốt)
+          và "tướng đối diện".<br />
+          - Mô phỏng giải dùng máy đánh ngẫu nhiên (để test chia bảng/xếp hạng).
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /*
+  Xiangqi minimal engine in JS.
+  Board coords: r 0..9, c 0..8
+  piece: {kind:'R'|'C'|'N'|'E'|'A'|'K'|'P', color:'r'|'b'}
+*/
+      const gridEl = document.getElementById("grid");
+      const logEl = document.getElementById("log");
+      const newGameBtn = document.getElementById("newGameBtn");
+      const simTournamentBtn = document.getElementById("simTournamentBtn");
+
+      let board = [];
+      let turn = "r"; // red first
+      let selected = null;
+
+      function makeEmptyBoard() {
+        const B = Array.from({ length: 10 }, () => Array(9).fill(null));
+        return B;
+      }
+
+      function setupInitialBoard() {
+        const B = makeEmptyBoard();
+        const row0 = ["R", "N", "E", "A", "K", "A", "E", "N", "R"];
+        for (let c = 0; c < 9; c++) B[0][c] = { kind: row0[c], color: "b" };
+        B[2][1] = { kind: "C", color: "b" };
+        B[2][7] = { kind: "C", color: "b" };
+        [0, 2, 4, 6, 8].forEach((c) => (B[3][c] = { kind: "P", color: "b" }));
+
+        const row9 = ["R", "N", "E", "A", "K", "A", "E", "N", "R"];
+        for (let c = 0; c < 9; c++) B[9][c] = { kind: row9[c], color: "r" };
+        B[7][1] = { kind: "C", color: "r" };
+        B[7][7] = { kind: "C", color: "r" };
+        [0, 2, 4, 6, 8].forEach((c) => (B[6][c] = { kind: "P", color: "r" }));
+        return B;
+      }
+
+      function inBoard(r, c) {
+        return r >= 0 && r <= 9 && c >= 0 && c <= 8;
+      }
+      function is_palace(r, c, color) {
+        if (color === "r") return r >= 7 && r <= 9 && c >= 3 && c <= 5;
+        return r >= 0 && r <= 2 && c >= 3 && c <= 5;
+      }
+
+      function pathCount(B, r1, c1, r2, c2) {
+        if (r1 === r2) {
+          let step = c2 > c1 ? 1 : -1,
+            cnt = 0;
+          for (let c = c1 + step; c !== c2; c += step) if (B[r1][c]) cnt++;
+          return cnt;
+        }
+        if (c1 === c2) {
+          let step = r2 > r1 ? 1 : -1,
+            cnt = 0;
+          for (let r = r1 + step; r !== r2; r += step) if (B[r][c1]) cnt++;
+          return cnt;
+        }
+        return -1;
+      }
+
+      function legalMovesFor(B, r, c) {
+        const p = B[r][c];
+        if (!p) return [];
+        const moves = [];
+        const k = p.kind,
+          col = p.color;
+        if (k === "R") {
+          [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ].forEach(([dr, dc]) => {
+            let nr = r + dr,
+              nc = c + dc;
+            while (inBoard(nr, nc)) {
+              if (!B[nr][nc]) moves.push([nr, nc]);
+              else {
+                if (B[nr][nc].color !== col) moves.push([nr, nc]);
+                break;
+              }
+              nr += dr;
+              nc += dc;
+            }
+          });
+        } else if (k === "C") {
+          [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ].forEach(([dr, dc]) => {
+            let nr = r + dr,
+              nc = c + dc;
+            while (inBoard(nr, nc) && !B[nr][nc]) {
+              moves.push([nr, nc]);
+              nr += dr;
+              nc += dc;
+            }
+            // find first blocker then look for capture after exactly one blocking piece
+            if (inBoard(nr, nc)) {
+              let br = nr,
+                bc = nc;
+              let rr = br + dr,
+                cc = bc + dc;
+              while (inBoard(rr, cc)) {
+                if (B[rr][cc]) {
+                  if (B[rr][cc].color !== col) moves.push([rr, cc]);
+                  break;
+                }
+                rr += dr;
+                cc += dc;
+              }
+            }
+          });
+        } else if (k === "N") {
+          const offs = [
+            [2, 1],
+            [2, -1],
+            [-2, 1],
+            [-2, -1],
+            [1, 2],
+            [1, -2],
+            [-1, 2],
+            [-1, -2],
+          ];
+          offs.forEach(([dr, dc]) => {
+            const nr = r + dr,
+              nc = c + dc;
+            if (!inBoard(nr, nc)) return;
+            const leg = Math.abs(dr) === 2 ? [r + dr / 2, c] : [r, c + dc / 2];
+            if (B[leg[0]][leg[1]]) return;
+            if (!B[nr][nc] || B[nr][nc].color !== col) moves.push([nr, nc]);
+          });
+        } else if (k === "E") {
+          [
+            [2, 2],
+            [2, -2],
+            [-2, 2],
+            [-2, -2],
+          ].forEach(([dr, dc]) => {
+            const nr = r + dr,
+              nc = c + dc;
+            const mr = r + dr / 2,
+              mc = c + dc / 2;
+            if (!inBoard(nr, nc)) return;
+            if (col === "r" && nr < 5) return;
+            if (col === "b" && nr > 4) return;
+            if (B[mr][mc]) return;
+            if (!B[nr][nc] || B[nr][nc].color !== col) moves.push([nr, nc]);
+          });
+        } else if (k === "A") {
+          [
+            [1, 1],
+            [1, -1],
+            [-1, 1],
+            [-1, -1],
+          ].forEach(([dr, dc]) => {
+            const nr = r + dr,
+              nc = c + dc;
+            if (!inBoard(nr, nc)) return;
+            if (!is_palace(nr, nc, col)) return;
+            if (!B[nr][nc] || B[nr][nc].color !== col) moves.push([nr, nc]);
+          });
+        } else if (k === "K") {
+          [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ].forEach(([dr, dc]) => {
+            const nr = r + dr,
+              nc = c + dc;
+            if (!inBoard(nr, nc)) return;
+            if (!is_palace(nr, nc, col)) return;
+            if (!B[nr][nc] || B[nr][nc].color !== col) moves.push([nr, nc]);
+          });
+          // flying general
+          for (let rr = r - 1; rr >= 0; rr--) {
+            if (B[rr][c]) {
+              if (B[rr][c].kind === "K" && B[rr][c].color !== col)
+                moves.push([rr, c]);
+              break;
+            }
+          }
+          for (let rr = r + 1; rr <= 9; rr++) {
+            if (B[rr][c]) {
+              if (B[rr][c].kind === "K" && B[rr][c].color !== col)
+                moves.push([rr, c]);
+              break;
+            }
+          }
+        } else if (k === "P") {
+          const df = col === "r" ? -1 : 1;
+          const nr = r + df,
+            nc = c;
+          if (inBoard(nr, nc) && (!B[nr][nc] || B[nr][nc].color !== col))
+            moves.push([nr, nc]);
+          const crossed = (col === "r" && r <= 4) || (col === "b" && r >= 5);
+          if (crossed) {
+            [
+              [0, 1],
+              [0, -1],
+            ].forEach(([dr, dc]) => {
+              const rr = r + dr,
+                cc = c + dc;
+              if (inBoard(rr, cc) && (!B[rr][cc] || B[rr][cc].color !== col))
+                moves.push([rr, cc]);
+            });
+          }
+        }
+        return moves;
+      }
+
+      function isMoveLegal(B, r1, c1, r2, c2, colorToMove) {
+        if (!inBoard(r1, c1) || !inBoard(r2, c2)) return false;
+        const p = B[r1][c1];
+        if (!p || p.color !== colorToMove) return false;
+        const cand = legalMovesFor(B, r1, c1);
+        return cand.some(([a, b]) => a === r2 && b === c2);
+      }
+
+      function applyMove(B, r1, c1, r2, c2) {
+        const B2 = B.map((row) => row.map((x) => (x ? { ...x } : null)));
+        B2[r2][c2] = B2[r1][c1];
+        B2[r1][c1] = null;
+        return B2;
+      }
+
+      function findKing(B, color) {
+        for (let r = 0; r < 10; r++)
+          for (let c = 0; c < 9; c++) {
+            const p = B[r][c];
+            if (p && p.color === color && p.kind === "K") return [r, c];
+          }
+        return null;
+      }
+
+      function isInCheck(B, color) {
+        const king = findKing(B, color);
+        if (!king) return true;
+        const [kr, kc] = king;
+        // check all opponent moves if any captures king
+        const opp = color === "r" ? "b" : "r";
+        for (let r = 0; r < 10; r++)
+          for (let c = 0; c < 9; c++) {
+            const p = B[r][c];
+            if (p && p.color === opp) {
+              const moves = legalMovesFor(B, r, c);
+              for (const [mr, mc] of moves)
+                if (mr === kr && mc === kc) return true;
+            }
+          }
+        return false;
+      }
+
+      function isCheckmate(B, color) {
+        // if in check and no legal move removes check -> mate
+        if (!isInCheck(B, color)) return false;
+        for (let r = 0; r < 10; r++)
+          for (let c = 0; c < 9; c++) {
+            const p = B[r][c];
+            if (p && p.color === color) {
+              const moves = legalMovesFor(B, r, c);
+              for (const [nr, nc] of moves) {
+                const B2 = applyMove(B, r, c, nr, nc);
+                if (!isInCheck(B2, color)) return false;
+              }
+            }
+          }
+        return true;
+      }
+
+      /* RENDER */
+      function render() {
+        gridEl.innerHTML = "";
+        for (let r = 0; r < 10; r++) {
+          for (let c = 0; c < 9; c++) {
+            const idx = r * 9 + c;
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.r = r;
+            cell.dataset.c = c;
+            cell.style.position = "relative";
+            const p = board[r][c];
+            if (p) {
+              const pc = document.createElement("div");
+              pc.className = "piece " + p.color;
+              pc.textContent = p.kind;
+              cell.appendChild(pc);
+            }
+            if (selected && selected[0] == r && selected[1] == c)
+              cell.style.outline = "3px solid gold";
+            cell.addEventListener("click", () => onCellClick(r, c));
+            gridEl.appendChild(cell);
+          }
+        }
+      }
+
+      function log(msg) {
+        const d = document.createElement("div");
+        d.textContent = msg;
+        logEl.prepend(d);
+      }
+
+      /* GAME FLOW */
+      function onCellClick(r, c) {
+        const p = board[r][c];
+        if (selected) {
+          const [sr, sc] = selected;
+          // try move
+          if (isMoveLegal(board, sr, sc, r, c, turn)) {
+            const B2 = applyMove(board, sr, sc, r, c);
+            // disallow moves that leave own king in check
+            if (isInCheck(B2, turn)) {
+              log("Không hợp lệ — sẽ tự chiếu tướng chính mình.");
+              selected = null;
+              render();
+              return;
+            }
+            board = B2;
+            log(`${turn === "r" ? "Red" : "Black"}: ${sr},${sc} → ${r},${c}`);
+            // checkmate?
+            const opp = turn === "r" ? "b" : "r";
+            if (isCheckmate(board, opp)) {
+              render();
+              log(`${turn === "r" ? "Red" : "Black"} thắng! (chiếu hết)`);
+              selected = null;
+              return;
+            }
+            // switch turn
+            turn = opp;
+            selected = null;
+            render();
+            return;
+          } else {
+            // if clicked own piece, reselect
+            if (p && p.color === turn) {
+              selected = [r, c];
+              render();
+              return;
+            }
+            // else clear selection
+            selected = null;
+            render();
+            return;
+          }
+        } else {
+          if (p && p.color === turn) {
+            selected = [r, c];
+            render();
+            return;
+          }
+        }
+      }
+
+      /* Controls */
+      function newGame() {
+        board = setupInitialBoard();
+        turn = "r";
+        selected = null;
+        log("New game started. Red đi trước.");
+        render();
+      }
+
+      // Tournament simulation (simple): n players, random games -> group stage (round robin in groups of 4) then knockout
+      function simulateTournament() {
+        // create 8 "players"
+        const players = Array.from({ length: 8 }, (_, i) => ({
+          id: i + 1,
+          name: "P" + (i + 1),
+          pts: 0,
+          gf: 0,
+          ga: 0,
+        }));
+        // group stage: 2 groups of 4, round robin, each pair 1 game random winner or draw
+        const groups = [players.slice(0, 4), players.slice(4, 8)];
+        for (const g of groups) {
+          // every pair
+          for (let i = 0; i < g.length; i++)
+            for (let j = i + 1; j < g.length; j++) {
+              const a = g[i],
+                b = g[j];
+              const outcome = Math.random();
+              if (outcome < 0.45) {
+                a.pts += 3;
+                a.gf += 1;
+                b.ga += 1;
+                log(`${a.name} beat ${b.name}`);
+              } else if (outcome < 0.9) {
+                b.pts += 3;
+                b.gf += 1;
+                a.ga += 1;
+                log(`${b.name} beat ${a.name}`);
+              } else {
+                a.pts += 1;
+                b.pts += 1;
+                a.gf += 1;
+                b.gf += 1;
+                a.ga += 1;
+                b.ga += 1;
+                log(`${a.name} draw ${b.name}`);
+              }
+            }
+        }
+        // rank top2 from each group
+        const qualifiers = [];
+        for (const g of groups) {
+          g.sort((x, y) => y.pts - x.pts || y.gf - x.gf);
+          qualifiers.push(g[0], g[1]);
+        }
+        log("Qualifiers: " + qualifiers.map((pp) => pp.name).join(", "));
+        // knockout semis + final (random)
+        function play(a, b) {
+          const outcome = Math.random();
+          return outcome < 0.5 ? a : b;
+        }
+        const semi1 = play(qualifiers[0], qualifiers[3]);
+        const semi2 = play(qualifiers[1], qualifiers[2]);
+        const champion = play(semi1, semi2);
+        log(`Champion: ${champion.name}`);
+      }
+
+      /* init */
+      newGameBtn.addEventListener("click", newGame);
+      simTournamentBtn.addEventListener("click", simulateTournament);
+
+      newGame();
+    </script>
+  </body>
+</html>

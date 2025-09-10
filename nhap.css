@@ -1,0 +1,15 @@
+.m h2 {
+  position: sticky;
+  background-color: yellow;
+  top: 0;
+}
+.m {
+  background-color: blue;
+  width: 200px;
+  height: 500px;
+  overflow: auto;
+}
+.n {
+  list-style-type: none;
+  padding-left: 0px;
+}
