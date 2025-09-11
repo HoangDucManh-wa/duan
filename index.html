@@ -1,31 +1,827 @@
 <!DOCTYPE html>
 <html lang="vi">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-
-    <link rel="stylesheet" href="reset.css" />
-    <link rel="stylesheet" href="styles.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cờ Tướng + Giải Đấu — Demo (HTML/CSS/JS)</title>
+    <style>
+      :root {
+        --cell: 52px;
+        --board-bg: #f7f0d9;
+        --red: #c0392b;
+        --black: #2c3e50;
+      }
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto;
+        margin: 18px;
+        background: #fafafa;
+        color: #111;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 12px 0;
+      }
+      .wrap {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      .board {
+        background: var(--board-bg);
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(9, var(--cell));
+        grid-template-rows: repeat(10, var(--cell));
+        gap: 0;
+        position: relative;
+      }
+      .cell {
+        width: var(--cell);
+        height: var(--cell);
+        box-sizing: border-box;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+      }
+      .piece {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 15px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      }
+      .r {
+        background: var(--red);
+        color: #fff;
+      }
+      .b {
+        background: var(--black);
+        color: #fff;
+      }
+      .outline {
+        outline: 3px solid gold;
+      }
+      .controls {
+        min-width: 360px;
+      }
+      button {
+        display: inline-block;
+        margin: 6px 6px 6px 0;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 0;
+        background: #2d9cdb;
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .log {
+        background: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        max-height: 220px;
+        overflow: auto;
+        margin-top: 8px;
+      }
+      .panel {
+        background: #fff;
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+        margin-bottom: 12px;
+      }
+      label {
+        display: block;
+        margin-top: 8px;
+        font-weight: 600;
+      }
+      input[type="text"] {
+        padding: 6px;
+        margin-top: 6px;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #eee;
+        border-radius: 6px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 6px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+      .small {
+        font-size: 13px;
+        color: #666;
+      }
+      .flex-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .players-list {
+        max-height: 140px;
+        overflow: auto;
+      }
+    </style>
   </head>
-  <body style="height: 10000px">
-    <header class="header fixed">
-      <div class="main-content">
-        <div class="body">
-          <img src="./img/logo.jpg" alt="CodeKaito" class="logo" />
-          <nav class="nav">
-            <ul>
-              <li class="active"><a href="#!">Home</a></li>
-              <li><a href="#!">Course</a></li>
-              <li><a href="#!">Pricing</a></li>
-              <li><a href="#!">Home</a></li>
-            </ul>
-          </nav>
-          <div class="action">
-            <a href="#!" class="btn btn-sign-up">Sign up</a>
+  <body>
+    <h1>Cờ Tướng + Giải Đấu — Demo (HTML/CSS/JS)</h1>
+    <div class="wrap">
+      <!-- BÀN CỜ -->
+      <div class="board">
+        <div id="grid" class="grid"></div>
+      </div>
+
+      <!-- KHU ĐIỀU KHIỂN -->
+      <div class="controls">
+        <div class="panel">
+          <div class="flex-row">
+            <button id="newGameBtn">New Game</button>
+            <button id="flipBtn">Flip Board</button>
+          </div>
+          <div class="small" style="margin-top: 8px">
+            - Click 1 quân để chọn, click ô để đi. Lưu ý: luật cơ bản (xe, pháo,
+            mã, tượng, sĩ, tướng, tốt) và tướng đối diện.
+          </div>
+          <div id="gameLog" class="log"></div>
+        </div>
+
+        <!-- Giải đấu: tạo players, chia bảng, simulate -->
+        <div class="panel">
+          <h3 style="margin: 0 0 8px 0">Tournament (8 players)</h3>
+          <div>
+            <label>Players (8) — sửa tên rồi nhấn Apply</label>
+            <div id="playersInputs" class="players-list"></div>
+            <div style="margin-top: 8px">
+              <button id="applyPlayersBtn">Apply Players</button>
+              <button id="autoFillBtn">Auto Fill</button>
+            </div>
+          </div>
+
+          <hr style="margin: 10px 0" />
+
+          <div>
+            <button id="divideBtn">Divide into Groups (2x4)</button>
+            <button id="runGroupBtn">Run Group Stage</button>
+            <button id="runKnockBtn">Run Knockouts</button>
+            <button id="simAllBtn">Simulate Full Tournament</button>
+          </div>
+
+          <div style="margin-top: 10px">
+            <label>Prizes (editable)</label>
+            <div class="flex-row">
+              <input id="pr1" type="text" value="1st: $500" />
+              <input id="pr2" type="text" value="2nd: $300" />
+              <input id="pr3" type="text" value="3rd: $100" />
+            </div>
+          </div>
+        </div>
+
+        <!-- KẾT QUẢ / BẢNG XẾP HẠNG -->
+        <div class="panel">
+          <h4 style="margin: 0 0 8px 0">Logs & Standings</h4>
+          <div id="tournLog" class="log"></div>
+          <div style="margin-top: 8px">
+            <h4 class="small" style="margin: 6px 0">Group composition</h4>
+            <div id="groupsArea" class="small"></div>
+          </div>
+          <div style="margin-top: 8px">
+            <h4 class="small" style="margin: 6px 0">Standings</h4>
+            <div id="standingsArea"></div>
+          </div>
+          <div style="margin-top: 8px">
+            <h4 class="small" style="margin: 6px 0">Prizes</h4>
+            <div id="prizeArea" class="small"></div>
           </div>
         </div>
       </div>
-    </header>
+    </div>
+
+    <script>
+      /* -------------------------
+   GAME LOGIC (Xiangqi minimal)
+   ------------------------- */
+      /* Board: rows 0..9, cols 0..8. piece: {kind:'R'|'C'|'N'|'E'|'A'|'K'|'P', color:'r'|'b'} */
+      const gridEl = document.getElementById("grid");
+      const gameLogEl = document.getElementById("gameLog");
+
+      let board = [];
+      let turn = "r";
+      let selected = null;
+      let boardFlipped = false;
+
+      function makeEmptyBoard() {
+        return Array.from({ length: 10 }, () => Array(9).fill(null));
+      }
+      function setupInitialBoard() {
+        const B = makeEmptyBoard();
+        const row0 = ["R", "N", "E", "A", "K", "A", "E", "N", "R"];
+        for (let c = 0; c < 9; c++) B[0][c] = { kind: row0[c], color: "b" };
+        B[2][1] = { kind: "C", color: "b" };
+        B[2][7] = { kind: "C", color: "b" };
+        [0, 2, 4, 6, 8].forEach((c) => (B[3][c] = { kind: "P", color: "b" }));
+        const row9 = ["R", "N", "E", "A", "K", "A", "E", "N", "R"];
+        for (let c = 0; c < 9; c++) B[9][c] = { kind: row9[c], color: "r" };
+        B[7][1] = { kind: "C", color: "r" };
+        B[7][7] = { kind: "C", color: "r" };
+        [0, 2, 4, 6, 8].forEach((c) => (B[6][c] = { kind: "P", color: "r" }));
+        return B;
+      }
+      function inBoard(r, c) {
+        return r >= 0 && r <= 9 && c >= 0 && c <= 8;
+      }
+      function is_palace(r, c, color) {
+        if (color === "r") return r >= 7 && r <= 9 && c >= 3 && c <= 5;
+        return r >= 0 && r <= 2 && c >= 3 && c <= 5;
+      }
+
+      function legalMovesFor(B, r, c) {
+        const p = B[r][c];
+        if (!p) return [];
+        const moves = [];
+        const k = p.kind,
+          col = p.color;
+        if (k === "R") {
+          [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ].forEach(([dr, dc]) => {
+            let nr = r + dr,
+              nc = c + dc;
+            while (inBoard(nr, nc)) {
+              if (!B[nr][nc]) moves.push([nr, nc]);
+              else {
+                if (B[nr][nc].color !== col) moves.push([nr, nc]);
+                break;
+              }
+              nr += dr;
+              nc += dc;
+            }
+          });
+        } else if (k === "C") {
+          [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ].forEach(([dr, dc]) => {
+            let nr = r + dr,
+              nc = c + dc;
+            while (inBoard(nr, nc) && !B[nr][nc]) {
+              moves.push([nr, nc]);
+              nr += dr;
+              nc += dc;
+            }
+            if (inBoard(nr, nc)) {
+              let br = nr,
+                bc = nc;
+              let rr = br + dr,
+                cc = bc + dc;
+              while (inBoard(rr, cc)) {
+                if (B[rr][cc]) {
+                  if (B[rr][cc].color !== col) moves.push([rr, cc]);
+                  break;
+                }
+                rr += dr;
+                cc += dc;
+              }
+            }
+          });
+        } else if (k === "N") {
+          const offs = [
+            [2, 1],
+            [2, -1],
+            [-2, 1],
+            [-2, -1],
+            [1, 2],
+            [1, -2],
+            [-1, 2],
+            [-1, -2],
+          ];
+          offs.forEach(([dr, dc]) => {
+            const nr = r + dr,
+              nc = c + dc;
+            if (!inBoard(nr, nc)) return;
+            const leg = Math.abs(dr) === 2 ? [r + dr / 2, c] : [r, c + dc / 2];
+            if (B[leg[0]][leg[1]]) return;
+            if (!B[nr][nc] || B[nr][nc].color !== col) moves.push([nr, nc]);
+          });
+        } else if (k === "E") {
+          [
+            [2, 2],
+            [2, -2],
+            [-2, 2],
+            [-2, -2],
+          ].forEach(([dr, dc]) => {
+            const nr = r + dr,
+              nc = c + dc;
+            const mr = r + dr / 2,
+              mc = c + dc / 2;
+            if (!inBoard(nr, nc)) return;
+            if (col === "r" && nr < 5) return;
+            if (col === "b" && nr > 4) return;
+            if (B[mr][mc]) return;
+            if (!B[nr][nc] || B[nr][nc].color !== col) moves.push([nr, nc]);
+          });
+        } else if (k === "A") {
+          [
+            [1, 1],
+            [1, -1],
+            [-1, 1],
+            [-1, -1],
+          ].forEach(([dr, dc]) => {
+            const nr = r + dr,
+              nc = c + dc;
+            if (!inBoard(nr, nc)) return;
+            if (!is_palace(nr, nc, col)) return;
+            if (!B[nr][nc] || B[nr][nc].color !== col) moves.push([nr, nc]);
+          });
+        } else if (k === "K") {
+          [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ].forEach(([dr, dc]) => {
+            const nr = r + dr,
+              nc = c + dc;
+            if (!inBoard(nr, nc)) return;
+            if (!is_palace(nr, nc, col)) return;
+            if (!B[nr][nc] || B[nr][nc].color !== col) moves.push([nr, nc]);
+          });
+          // flying general
+          for (let rr = r - 1; rr >= 0; rr--) {
+            if (B[rr][c]) {
+              if (B[rr][c].kind === "K" && B[rr][c].color !== col)
+                moves.push([rr, c]);
+              break;
+            }
+          }
+          for (let rr = r + 1; rr <= 9; rr++) {
+            if (B[rr][c]) {
+              if (B[rr][c].kind === "K" && B[rr][c].color !== col)
+                moves.push([rr, c]);
+              break;
+            }
+          }
+        } else if (k === "P") {
+          const df = col === "r" ? -1 : 1;
+          const nr = r + df,
+            nc = c;
+          if (inBoard(nr, nc) && (!B[nr][nc] || B[nr][nc].color !== col))
+            moves.push([nr, nc]);
+          const crossed = (col === "r" && r <= 4) || (col === "b" && r >= 5);
+          if (crossed) {
+            [
+              [0, 1],
+              [0, -1],
+            ].forEach(([dr, dc]) => {
+              const rr = r + dr,
+                cc = c + dc;
+              if (inBoard(rr, cc) && (!B[rr][cc] || B[rr][cc].color !== col))
+                moves.push([rr, cc]);
+            });
+          }
+        }
+        return moves;
+      }
+      function isMoveLegal(B, r1, c1, r2, c2, colorToMove) {
+        if (!inBoard(r1, c1) || !inBoard(r2, c2)) return false;
+        const p = B[r1][c1];
+        if (!p || p.color !== colorToMove) return false;
+        const cand = legalMovesFor(B, r1, c1);
+        return cand.some(([a, b]) => a === r2 && b === c2);
+      }
+      function applyMove(B, r1, c1, r2, c2) {
+        const B2 = B.map((row) => row.map((x) => (x ? { ...x } : null)));
+        B2[r2][c2] = B2[r1][c1];
+        B2[r1][c1] = null;
+        return B2;
+      }
+      function findKing(B, color) {
+        for (let r = 0; r < 10; r++)
+          for (let c = 0; c < 9; c++) {
+            if (B[r][c] && B[r][c].color === color && B[r][c].kind === "K")
+              return [r, c];
+          }
+        return null;
+      }
+      function isInCheck(B, color) {
+        const king = findKing(B, color);
+        if (!king) return true;
+        const [kr, kc] = king;
+        const opp = color === "r" ? "b" : "r";
+        for (let r = 0; r < 10; r++)
+          for (let c = 0; c < 9; c++) {
+            const p = B[r][c];
+            if (p && p.color === opp) {
+              const moves = legalMovesFor(B, r, c);
+              for (const [mr, mc] of moves)
+                if (mr === kr && mc === kc) return true;
+            }
+          }
+        return false;
+      }
+      function isCheckmate(B, color) {
+        if (!isInCheck(B, color)) return false;
+        for (let r = 0; r < 10; r++)
+          for (let c = 0; c < 9; c++) {
+            const p = B[r][c];
+            if (p && p.color === color) {
+              const moves = legalMovesFor(B, r, c);
+              for (const [nr, nc] of moves) {
+                const B2 = applyMove(B, r, c, nr, nc);
+                if (!isInCheck(B2, color)) return false;
+              }
+            }
+          }
+        return true;
+      }
+
+      /* ------------- RENDER ------------- */
+      function render() {
+        gridEl.innerHTML = "";
+        for (let r = 0; r < 10; r++) {
+          for (let c = 0; c < 9; c++) {
+            const rr = boardFlipped ? 9 - r : r;
+            const cc = boardFlipped ? 8 - c : c;
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.r = rr;
+            cell.dataset.c = cc;
+            const p = board[rr][cc];
+            if (p) {
+              const pc = document.createElement("div");
+              pc.className = "piece " + p.color;
+              pc.textContent = p.kind;
+              cell.appendChild(pc);
+            }
+            if (selected && selected[0] === rr && selected[1] === cc)
+              cell.classList.add("outline");
+            cell.addEventListener("click", () => onCellClick(rr, cc));
+            gridEl.appendChild(cell);
+          }
+        }
+      }
+      function logGame(msg) {
+        const d = document.createElement("div");
+        d.textContent = msg;
+        gameLogEl.prepend(d);
+      }
+
+      /* ------------- INTERACTION ------------- */
+      function onCellClick(r, c) {
+        const p = board[r][c];
+        if (selected) {
+          const [sr, sc] = selected;
+          if (isMoveLegal(board, sr, sc, r, c, turn)) {
+            const B2 = applyMove(board, sr, sc, r, c);
+            if (isInCheck(B2, turn)) {
+              logGame("Không hợp lệ — tự chiếu tướng.");
+              selected = null;
+              render();
+              return;
+            }
+            board = B2;
+            logGame(
+              `${turn === "r" ? "Red" : "Black"}: ${sr},${sc} → ${r},${c}`
+            );
+            const opp = turn === "r" ? "b" : "r";
+            if (isCheckmate(board, opp)) {
+              render();
+              logGame(`${turn === "r" ? "Red" : "Black"} thắng! (chiếu hết)`);
+              selected = null;
+              return;
+            }
+            turn = opp;
+            selected = null;
+            render();
+            return;
+          } else {
+            if (p && p.color === turn) {
+              selected = [r, c];
+              render();
+              return;
+            }
+            selected = null;
+            render();
+            return;
+          }
+        } else {
+          if (p && p.color === turn) {
+            selected = [r, c];
+            render();
+            return;
+          }
+        }
+      }
+
+      /* ------------- INIT GAME ------------- */
+      function newGame() {
+        board = setupInitialBoard();
+        turn = "r";
+        selected = null;
+        logGame("New game started. Red đi trước.");
+        render();
+      }
+      document.getElementById("newGameBtn").addEventListener("click", newGame);
+      document.getElementById("flipBtn").addEventListener("click", () => {
+        boardFlipped = !boardFlipped;
+        render();
+      });
+
+      newGame();
+
+      /* -------------------------
+   TOURNAMENT LOGIC (8 players)
+   ------------------------- */
+      const playersInputs = document.getElementById("playersInputs");
+      const applyPlayersBtn = document.getElementById("applyPlayersBtn");
+      const autoFillBtn = document.getElementById("autoFillBtn");
+      const divideBtn = document.getElementById("divideBtn");
+      const runGroupBtn = document.getElementById("runGroupBtn");
+      const runKnockBtn = document.getElementById("runKnockBtn");
+      const simAllBtn = document.getElementById("simAllBtn");
+      const tournLog = document.getElementById("tournLog");
+      const groupsArea = document.getElementById("groupsArea");
+      const standingsArea = document.getElementById("standingsArea");
+      const prizeArea = document.getElementById("prizeArea");
+
+      let players = Array.from({ length: 8 }, (_, i) => ({
+        id: i + 1,
+        name: `P${i + 1}`,
+        pts: 0,
+        gf: 0,
+        ga: 0,
+      }));
+      let groups = []; // [[p1,p2,p3,p4],[...]]
+      let qualifiers = []; // top2 each group
+      let prizes = ["1st: $500", "2nd: $300", "3rd: $100"];
+
+      function refreshPlayersInputs() {
+        playersInputs.innerHTML = "";
+        players.forEach((p, i) => {
+          const wrapper = document.createElement("div");
+          wrapper.style.display = "flex";
+          wrapper.style.gap = "8px";
+          wrapper.style.margin = "6px 0";
+          const idx = document.createElement("div");
+          idx.textContent = i + 1 + ". ";
+          idx.style.width = "20px";
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = p.name;
+          input.dataset.idx = i;
+          input.addEventListener("input", (e) => {
+            players[+e.target.dataset.idx].name = e.target.value;
+          });
+          wrapper.appendChild(idx);
+          wrapper.appendChild(input);
+          playersInputs.appendChild(wrapper);
+        });
+      }
+
+      function logT(msg) {
+        const d = document.createElement("div");
+        d.textContent = msg;
+        tournLog.prepend(d);
+      }
+
+      function autoFill() {
+        players = Array.from({ length: 8 }, (_, i) => ({
+          id: i + 1,
+          name: `Player_${i + 1}`,
+          pts: 0,
+          gf: 0,
+          ga: 0,
+        }));
+        refreshPlayersInputs();
+        logT("Auto-filled 8 players.");
+      }
+      function applyPlayers() {
+        players.forEach((p) => {
+          p.pts = 0;
+          p.gf = 0;
+          p.ga = 0;
+        });
+        logT("Players applied.");
+        renderGroupsDisplay();
+        refreshStandings();
+      }
+
+      function divideIntoGroups() {
+        // deterministic split: first 4 -> group A, last 4 -> group B
+        groups = [
+          players.slice(0, 4).map((p) => ({ ...p })),
+          players.slice(4, 8).map((p) => ({ ...p })),
+        ];
+        renderGroupsDisplay();
+        logT("Divided into 2 groups of 4.");
+      }
+
+      function renderGroupsDisplay() {
+        groupsArea.innerHTML = "";
+        if (groups.length === 0) {
+          groupsArea.textContent = "(Chưa chia bảng)";
+          return;
+        }
+        groups.forEach((g, i) => {
+          const div = document.createElement("div");
+          div.innerHTML = `<strong>Group ${i === 0 ? "A" : "B"}</strong>: ${g
+            .map((p) => p.name)
+            .join(", ")}`;
+          groupsArea.appendChild(div);
+        });
+      }
+
+      function playMatch(a, b) {
+        // random outcome with small bias: 0..1
+        const o = Math.random();
+        if (o < 0.42) {
+          a.pts += 3;
+          a.gf += 1;
+          b.ga += 1;
+          logT(`${a.name} beat ${b.name}`);
+          return a;
+        } else if (o < 0.84) {
+          b.pts += 3;
+          b.gf += 1;
+          a.ga += 1;
+          logT(`${b.name} beat ${a.name}`);
+          return b;
+        } else {
+          a.pts += 1;
+          b.pts += 1;
+          a.gf += 1;
+          b.gf += 1;
+          a.ga += 1;
+          b.ga += 1;
+          logT(`${a.name} draw ${b.name}`);
+          return null;
+        }
+      }
+
+      function runGroupStage() {
+        if (groups.length === 0) {
+          logT("Chưa chia bảng!");
+          return;
+        }
+        // reset stats
+        groups.forEach((g) =>
+          g.forEach((p) => {
+            p.pts = 0;
+            p.gf = 0;
+            p.ga = 0;
+          })
+        );
+        // round-robin in each group
+        for (const g of groups) {
+          for (let i = 0; i < g.length; i++)
+            for (let j = i + 1; j < g.length; j++) playMatch(g[i], g[j]);
+        }
+        // determine top2
+        qualifiers = [];
+        groups.forEach((g) => {
+          g.sort((x, y) => y.pts - x.pts || y.gf - x.gf);
+          qualifiers.push(g[0], g[1]);
+        });
+        renderGroupsDisplay();
+        refreshStandings();
+        logT(
+          "Group stage completed. Qualifiers: " +
+            qualifiers.map((p) => p.name).join(", ")
+        );
+      }
+
+      function refreshStandings() {
+        // combine all players with stats if group stage run, otherwise default players
+        standingsArea.innerHTML = "";
+        let list = [];
+        if (groups.length > 0) {
+          groups.forEach((g) => g.forEach((p) => list.push(p)));
+        } else list = players.map((p) => ({ ...p }));
+        // sort by pts, gf
+        list.sort((x, y) => y.pts - x.pts || y.gf - x.gf);
+        const tbl = document.createElement("table");
+        const header = document.createElement("tr");
+        header.innerHTML =
+          "<th>#</th><th>Name</th><th>Pts</th><th>GF</th><th>GA</th>";
+        tbl.appendChild(header);
+        list.forEach((p, i) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${i + 1}</td><td>${p.name}</td><td>${
+            p.pts || 0
+          }</td><td>${p.gf || 0}</td><td>${p.ga || 0}</td>`;
+          tbl.appendChild(tr);
+        });
+        standingsArea.appendChild(tbl);
+      }
+
+      function runKnockouts() {
+        if (qualifiers.length < 4) {
+          logT("Chưa có đủ đội vượt qua vòng bảng. Chạy group stage trước.");
+          return;
+        }
+        // semifinal: Q0 vs Q3, Q1 vs Q2 (as in earlier demo)
+        function play(a, b) {
+          return Math.random() < 0.5 ? a : b;
+        }
+        const semi1 = play(qualifiers[0], qualifiers[3]);
+        const semi2 = play(qualifiers[1], qualifiers[2]);
+        const champion = play(semi1, semi2);
+        // determine runner-up / 3rd by logical approach: the losers from semis, pick winner of a small match
+        const losers = [
+          qualifiers[0] === semi1 ? qualifiers[3] : qualifiers[0],
+          qualifiers[1] === semi2 ? qualifiers[2] : qualifiers[1],
+        ];
+        const runner =
+          Math.random() < 0.5
+            ? semi1 === champion
+              ? semi2
+              : semi1
+            : semi2 === champion
+            ? semi1
+            : semi2;
+        const third = losers[Math.random() < 0.5 ? 0 : 1];
+        logT(
+          `Knockouts: SF winners: ${semi1.name}, ${semi2.name}. Champion: ${champion.name}`
+        );
+        allocatePrizes(champion, runner, third);
+      }
+
+      function allocatePrizes(first, second, third) {
+        prizes = [
+          document.getElementById("pr1").value,
+          document.getElementById("pr2").value,
+          document.getElementById("pr3").value,
+        ];
+        prizeArea.innerHTML = `<div>1st — ${first.name}: ${prizes[0]}</div><div>2nd — ${second.name}: ${prizes[1]}</div><div>3rd — ${third.name}: ${prizes[2]}</div>`;
+        logT(
+          `Prizes allocated: 1st ${first.name}, 2nd ${second.name}, 3rd ${third.name}`
+        );
+      }
+
+      /* Simulate entire tournament */
+      function simulateFullTournament() {
+        divideIntoGroups();
+        runGroupStage();
+        // simple knockouts like earlier
+        if (qualifiers.length < 4) {
+          logT("Không đủ qualifiers.");
+          return;
+        }
+        const semi1 = Math.random() < 0.5 ? qualifiers[0] : qualifiers[3];
+        const semi1b = semi1 === qualifiers[0] ? qualifiers[3] : qualifiers[0];
+        const semi2 = Math.random() < 0.5 ? qualifiers[1] : qualifiers[2];
+        const semi2b = semi2 === qualifiers[1] ? qualifiers[2] : qualifiers[1];
+        const winner1 = Math.random() < 0.5 ? semi1 : semi1b;
+        const winner2 = Math.random() < 0.5 ? semi2 : semi2b;
+        const champ = Math.random() < 0.5 ? winner1 : winner2;
+        const runner = champ === winner1 ? winner2 : winner1;
+        const third = [semi1, semi1b, semi2, semi2b].filter(
+          (x) => x !== champ && x !== runner
+        )[Math.floor(Math.random() * 2)];
+        allocatePrizes(champ, runner, third);
+        logT(`Full tournament simulated. Champion: ${champ.name}`);
+        refreshStandings();
+      }
+
+      /* UI wiring */
+      refreshPlayersInputs();
+      refreshStandings();
+
+      applyPlayersBtn.addEventListener("click", applyPlayers);
+      autoFillBtn.addEventListener("click", () => {
+        autoFill();
+        refreshPlayersInputs();
+        refreshStandings();
+      });
+      divideBtn.addEventListener("click", () => {
+        divideIntoGroups();
+      });
+      runGroupBtn.addEventListener("click", runGroupStage);
+      runKnockBtn.addEventListener("click", runKnockouts);
+      simAllBtn.addEventListener("click", simulateFullTournament);
+    </script>
   </body>
 </html>
