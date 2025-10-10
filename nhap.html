@@ -1,258 +1,73 @@
 <!DOCTYPE html>
 <html lang="vi">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Quiz Học Tập - QuickLearn</title>
-    <style>
-      :root {
-        --bg: #0f1724;
-        --card: #0b1220;
-        --accent: #06b6d4;
-        --muted: #94a3b8;
-        --glass: rgba(255, 255, 255, 0.03);
-        --success: #10b981;
-        --danger: #ef4444;
-        --max-width: 900px;
-        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
-          "Helvetica Neue", Arial;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        background: linear-gradient(180deg, #071029 0%, #071827 60%);
-        color: #e6eef6;
-      }
-      .wrap {
-        max-width: var(--max-width);
-        margin: 32px auto;
-        padding: 20px;
-      }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
 
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .brand {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-      .logo {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--accent), #60a5fa);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        color: #07203a;
-      }
-      h1 {
-        margin: 0;
-        font-size: 20px;
-      }
-      p.lead {
-        margin: 0;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      main {
-        margin-top: 18px;
-        background: var(--card);
-        border-radius: 14px;
-        padding: 18px;
-        box-shadow: 0 6px 30px rgba(2, 6, 23, 0.6);
-      }
-
-      .center {
-        display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 18px;
-      }
-      @media (max-width: 880px) {
-        .center {
-          grid-template-columns: 1fr;
-        }
-        .side {
-          order: 2;
-        }
-      }
-
-      .card {
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.02),
-          transparent
-        );
-        border-radius: 12px;
-        padding: 16px;
-      }
-      .question {
-        font-size: 18px;
-        margin-bottom: 12px;
-      }
-      .choices {
-        display: grid;
-        gap: 10px;
-      }
-      .choice {
-        padding: 12px;
-        border-radius: 10px;
-        background: var(--glass);
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        cursor: pointer;
-        transition: transform 0.12s ease, box-shadow 0.12s ease;
-      }
-      .choice:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
-      }
-      .choice.correct {
-        outline: 3px solid rgba(16, 185, 129, 0.12);
-        background: linear-gradient(
-          90deg,
-          rgba(16, 185, 129, 0.06),
-          transparent
-        );
-      }
-      .choice.wrong {
-        outline: 3px solid rgba(239, 68, 68, 0.12);
-        background: linear-gradient(
-          90deg,
-          rgba(239, 68, 68, 0.04),
-          transparent
-        );
-      }
-
-      .meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 12px;
-        color: var(--muted);
-        font-size: 13px;
-      }
-      .progress {
-        height: 10px;
-        background: rgba(255, 255, 255, 0.04);
-        border-radius: 999px;
-        overflow: hidden;
-      }
-      .progress > i {
-        display: block;
-        height: 100%;
-        background: linear-gradient(90deg, var(--accent), #60a5fa);
-        width: 0%;
-      }
-
-      .side {
-        width: 100%;
-      }
-      .stat {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .stat .row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .btn {
-        display: inline-block;
-        padding: 10px 14px;
-        border-radius: 10px;
-        background: linear-gradient(90deg, var(--accent), #60a5fa);
-        color: #042028;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-      }
-      .btn.ghost {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.04);
-        color: var(--muted);
-      }
-      .footer {
-        margin-top: 18px;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      /* small helper badges */
-      .badge {
-        padding: 6px 8px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        font-size: 13px;
-      }
-
-      /* confetti canvas */
-      #confetti {
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 120;
-      }
-
-      /* accessibility focus */
-      .choice:focus {
-        outline: 2px dashed rgba(6, 182, 212, 0.6);
-        outline-offset: 3px;
-      }
-    </style>
+    <link rel="stylesheet" href="reset.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
-    <div class="wrap">
-      <header>
-        <div class="brand">
-          <div class="logo">QL</div>
-          <div>
-            <h1>QuickLearn — Trò chơi học tập</h1>
-            <p class="lead">
-              Học + chơi: trả lời câu hỏi, tích điểm, cạnh tranh với chính mình.
-            </p>
+  <body style="height: 10000px">
+    <header class="header fixed">
+      <div class="main-content">
+        <div class="body">
+          <img src="./img/logo.jpg" alt="CodeKaito" class="logo" />
+          <nav class="nav">
+            <ul>
+              <li class="active"><a href="#!">Home</a></li>
+              <li><a href="#!">Course</a></li>
+              <li><a href="#!">Pricing</a></li>
+              <li><a href="#!">Home</a></li>
+            </ul>
+          </nav>
+          <div class="action">
+            <a href="#!" class="btn btn-sign-up">Sign up</a>
           </div>
         </div>
-        <div class="badge" id="difficultyLabel">Mức: Trung bình</div>
-      </header>
-
-      <main>
-        <div class="center">
-          <section class="card main">
-            <div id="startScreen">
-              <h2>Bắt đầu Quiz</h2>
-              <p style="color: var(--muted)">
-                Chọn số câu và độ khó, rồi ấn "Bắt đầu".
-              </p>
-              <div
-                style="
-                  display: flex;
-                  gap: 8px;
-                  margin-top: 12px;
-                  align-items: center;
-                "
-              >
-                <label style="color: var(--muted)">Số câu:</label>
-                <select id="numQs"></select>
+      </div>
+    </header>
+    <div class="main">
+      <div class="main-content">
+        <div class="part1">
+          <img class="img-hero" src="./img/new/1.jpg" alt="hero" />
+          <div class="icon-content-block">
+            <div class="block1">
+              <div class="icon icon1">
+                <img src="./icon/1.jpg" alt="icon1" />
               </div>
+              <p class="content1-block">20 Courses</p>
+              <p class="content2-block">UI/UX Design</p>
             </div>
-          </section>
+            <div class="block2">
+              <div class="icon icon2">
+                <img src="./icon/2.jpg" alt="icon2" />
+              </div>
+              <p class="content1-block">20 Courses</p>
+              <p class="content2-block">Development</p>
+            </div>
+            <div class="block3">
+              <div class="icon icon3">
+                <img src="./icon/3.jpg" alt="icon3" />
+              </div>
+              <p class="content1-block">30 Courses</p>
+              <p class="content2-block">Marketing</p>
+            </div>
+          </div>
         </div>
-      </main>
+        <div class="part2">
+          <h2>Learn without limits and spread knowledge.</h2>
+          <p>
+            Build new skills for that “this is my year” feeling with courses,
+            certificates, and degrees from world-class universities and
+            companies.
+          </p>
+          <div class="block1"><a href="#">See Courses</a></div>
+          <div class="block2"><a href="#">Watch Video</a></div>
+          <p>Recent engagement</p>
+          <p><strong>50K</strong> Students <strong>70+</strong> Courses</p>
+        </div>
+      </div>
     </div>
   </body>
 </html>

@@ -1,15 +1,131 @@
-.m h2 {
+* {
+  box-sizing: border-box;
+}
+html {
+  font-size: 62.5%;
+}
+body {
+  font-size: 1.6rem;
+  font-family: "Sen", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: weight;
+  font-style: normal;
+}
+.main-content {
+  width: 1170px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: calc(100% - 48px);
+}
+a {
+  text-decoration: none;
+}
+.header .body {
+  display: flex;
+  align-items: center;
+  padding: 30px 0px 8px 0px;
+}
+.header {
+  background-color: #fffcf4;
+}
+.header.fixed {
   position: sticky;
-  background-color: yellow;
-  top: 0;
+  top: -28px;
 }
-.m {
-  background-color: blue;
-  width: 200px;
-  height: 500px;
-  overflow: auto;
+.nav ul {
+  display: flex;
 }
-.n {
-  list-style-type: none;
-  padding-left: 0px;
+.logo {
+  width: 100px;
+}
+.nav {
+  margin-left: auto;
+}
+.nav a {
+  color: rgb(40, 40, 40);
+  padding: 8px 21px;
+  position: relative;
+}
+.nav a:hover {
+  color: black;
+  text-shadow: 1px 0px 0px currentColor;
+}
+.nav li.active a::after {
+  display: block;
+  content: "";
+  left: 21px;
+  bottom: 6px;
+  position: absolute;
+  width: 12px;
+  height: 2px;
+  background-color: black;
+}
+.active {
+  font-weight: bold;
+}
+.action {
+  background-color: black;
+  padding: 15px 20px;
+  border-radius: 30px 30px 20px 20px;
+}
+.btn-sign-up {
+  color: white;
+}
+.btn-sign-up:hover {
+  text-shadow: 1px 0px 0px currentColor;
+}
+.header .action {
+  margin-left: 49px;
+}
+/*hehe*/
+.main {
+  background-color: #fffcf4;
+}
+.main .main-content {
+  display: flex;
+}
+.img-hero {
+  width: 300px;
+}
+.part1 {
+  position: relative;
+  width: 400px;
+}
+.icon-content-block {
+  position: absolute;
+  bottom: 20px;
+  right: 0px;
+  background-color: white;
+  padding: 20px;
+}
+.main .block1 {
+  display: flex;
+}
+.main .block2 {
+  display: flex;
+}
+.main .block3 {
+  display: flex;
+}
+.main .icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: aqua;
+}
+.main .icon img {
+  width: 20px;
+}
+.main .icon1 {
+  background-color: lightpink;
+}
+.main .icon2 {
+  background-color: lightcyan;
+}
+.main .icon3 {
+  background-color: lightseagreen;
 }

@@ -5,6 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "java",
+      "name": "bai1",
+      "request": "launch",
+      "mainClass": "bai1",
+      "projectName": "du-an_bcc1d9cf"
+    },
+    {
       "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome against localhost",
