@@ -1,522 +1,58 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Game Con Rắn - Snake (Single File)</title>
-    <style>
-      :root {
-        --bg: #0b1220;
-        --panel: #0f1724;
-        --accent: #34d399;
-        --danger: #ff6b6b;
-        --muted: #94a3b8;
-      }
-      * {
-        box-sizing: border-box;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-          Roboto, "Helvetica Neue", Arial;
-      }
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        background: linear-gradient(180deg, #051026 0%, #07162b 100%);
-        color: #e6eef8;
-      }
-      .wrap {
-        min-height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 28px;
-      }
-      .card {
-        width: 760px;
-        max-width: 95%;
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.02),
-          rgba(255, 255, 255, 0.01)
-        );
-        border-radius: 12px;
-        padding: 18px;
-        display: grid;
-        grid-template-columns: 420px 1fr;
-        gap: 14px;
-        box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
-      }
-      .board {
-        background: var(--panel);
-        border-radius: 8px;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      canvas {
-        background: linear-gradient(180deg, #061223, #02121a);
-        border-radius: 6px;
-        display: block;
-        margin: 6px 0;
-      }
-      .info {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      h1 {
-        margin: 0;
-        font-size: 18px;
-      }
-      .controls {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 8px;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 8px;
-      }
-      .row {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      button {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        padding: 8px 12px;
-        border-radius: 8px;
-        color: inherit;
-        cursor: pointer;
-      }
-      button.primary {
-        background: var(--accent);
-        color: #042017;
-        border: none;
-      }
-      .small {
-        font-size: 13px;
-        color: var(--muted);
-      }
-      .score {
-        font-weight: 700;
-        font-size: 20px;
-        color: var(--accent);
-      }
-      .hint {
-        font-size: 13px;
-        color: var(--muted);
-      }
-      .footer {
-        font-size: 12px;
-        color: var(--muted);
-        margin-top: 6px;
-      }
-      input[type="range"] {
-        width: 100%;
-      }
-      .legend {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 3px;
-      }
-      .dot.snake {
-        background: linear-gradient(180deg, #34d399, #059669);
-      }
-      .dot.food {
-        background: linear-gradient(180deg, #ff6b6b, #ff3b3b);
-      }
-      @media (max-width: 700px) {
-        .card {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doccument</title>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="wrap">
-      <div class="card">
-        <div class="board">
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              width: 100%;
-            "
-          >
-            <h1>Con Rắn — Snake (Nhấn R để chơi lại)</h1>
-            <div class="score" id="score">Score: 0</div>
-          </div>
-          <canvas id="game" width="420" height="420"></canvas>
-          <div class="footer small">
-            Điều khiển: phím mũi tên hoặc WASD. P để tạm dừng. R để chơi lại.
-          </div>
-        </div>
-        <div class="info">
-          <div class="controls">
-            <div class="row">
-              <button id="start" class="primary">Bắt đầu / Tiếp tục</button
-              ><button id="pause">Tạm dừng</button
-              ><button id="restart">Chơi lại (R)</button>
-            </div>
-            <div class="row">
-              <label class="small"
-                >Tốc độ: <span id="speedLabel">8</span></label
-              >
-            </div>
-            <div class="row">
-              <input
-                id="speed"
-                type="range"
-                min="4"
-                max="18"
-                step="1"
-                value="8"
-              />
-            </div>
-            <div class="row legend">
-              <div class="dot snake"></div>
-              <div class="small">Rắn</div>
-              <div class="dot food"></div>
-              <div class="small">Mồi</div>
-            </div>
-            <div class="row">
-              <div class="small">
-                Kích thước lưới: <strong id="gridSize">21 x 21</strong>
-              </div>
-            </div>
-          </div>
-          <div
-            style="
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.01);
-              border-radius: 8px;
-            "
-          >
-            <div class="small" style="margin-bottom: 6px">
-              <strong>Luật chơi</strong>
-            </div>
-            <ul class="small" style="margin: 0 0 0 18px; padding: 0">
-              <li>Ăn mồi để tăng điểm và độ dài rắn.</li>
-              <li>Đâm tường hoặc cắn chính mình sẽ kết thúc ván.</li>
-              <li>Tốc độ tăng nhẹ sau mỗi 3 mồi ăn.</li>
-            </ul>
-          </div>
-          <div
-            style="
-              padding: 8px;
-              background: rgba(255, 255, 255, 0.01);
-              border-radius: 8px;
-            "
-            class="small"
-          >
-            Muốn chỉnh tính năng (ví dụ: cho rắn chạy xuyên tường, thêm âm
-            thanh, đổi màu...) nói nhanh — mình sẽ chỉnh.
-          </div>
-        </div>
-      </div>
-    </div>
+    <header><h1>To-do-list</h1></header>
+    <main>
+      <section>
+        <h2>1. Danh sách những công việc quan trọng (có giá trị lâu dài):</h2>
+        <ul id="important">
+          <li>English<input type="checkbox" /></li>
+          <li>Programming<input type="checkbox" /></li>
+          <li>Brain Knowledge<input type="checkbox" /></li>
+          <li>Other skills<input type="checkbox" /></li>
+          <li>Tư duy logic<input type="checkbox" /></li>
+          <li>Linh hoạt<input type="checkbox" /></li>
+          <li>Sáng tạo<input type="checkbox" /></li>
+          <li>Liên kết vàng<input type="checkbox" /></li>
+          <li>Nhận thức bản thân<input type="checkbox" /></li>
+        </ul>
+        <button id="xoa_important">Delete</button>
+        <p style="display: inline-block">Xóa các công việc được đánh dấu</p>
+        <br />
 
-    <script>
-      alert("Game con rắn của anh Mạnh cho Anh Chi xem ");
-      // --- Game setup ---
-      const canvas = document.getElementById("game");
-      const ctx = canvas.getContext("2d");
-      const scoreEl = document.getElementById("score");
-      const startBtn = document.getElementById("start");
-      const pauseBtn = document.getElementById("pause");
-      const restartBtn = document.getElementById("restart");
-      const speedSlider = document.getElementById("speed");
-      const speedLabel = document.getElementById("speedLabel");
-      const gridSizeEl = document.getElementById("gridSize");
-
-      // Grid / visual config
-      const TILE = 20; // pixel per tile
-      const COLS = Math.floor(canvas.width / TILE);
-      const ROWS = Math.floor(canvas.height / TILE);
-      gridSizeEl.textContent = `${COLS} x ${ROWS}`;
-
-      // Game state
-      let snake = [];
-      let dir = { x: 1, y: 0 };
-      let nextDir = { x: 1, y: 0 };
-      let food = null;
-      let score = 0;
-      let running = false;
-      let paused = false;
-      let moveInterval = null;
-      let speed = parseInt(speedSlider.value, 10); // moves per second
-
-      // Initialize
-      function reset() {
-        const startX = Math.floor(COLS / 2);
-        const startY = Math.floor(ROWS / 2);
-        snake = [
-          { x: startX, y: startY },
-          { x: startX - 1, y: startY },
-          { x: startX - 2, y: startY },
-        ];
-        dir = { x: 1, y: 0 };
-        nextDir = { x: 1, y: 0 };
-        spawnFood();
-        score = 0;
-        running = true;
-        paused = false;
-        updateScore();
-        startLoop();
-        draw();
-      }
-
-      function spawnFood() {
-        while (true) {
-          const fx = Math.floor(Math.random() * COLS);
-          const fy = Math.floor(Math.random() * ROWS);
-          if (!snake.some((s) => s.x === fx && s.y === fy)) {
-            food = { x: fx, y: fy };
-            break;
-          }
-        }
-      }
-
-      function updateScore() {
-        scoreEl.textContent = `Score: ${score}`;
-      }
-
-      // Movement and game logic
-      function step() {
-        // update direction
-        if (
-          (nextDir.x !== -dir.x || nextDir.y !== -dir.y) &&
-          (nextDir.x !== dir.x || nextDir.y !== dir.y)
-        ) {
-          dir = nextDir;
-        }
-
-        const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-
-        // check wall collision -> game over
-        if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
-          gameOver();
-          return;
-        }
-
-        // check self collision
-        if (snake.some((s) => s.x === head.x && s.y === head.y)) {
-          gameOver();
-          return;
-        }
-
-        snake.unshift(head);
-
-        // eat food?
-        if (food && head.x === food.x && head.y === food.y) {
-          score += 1;
-          // each 3 fruits increase speed slightly
-          if (score % 3 === 0) {
-            setSpeed(Math.min(24, speed + 1));
-          }
-          spawnFood();
-          updateScore();
-        } else {
-          snake.pop();
-        }
-        draw();
-      }
-
-      function gameOver() {
-        running = false;
-        stopLoop();
-        // flash red and show final
-        draw(true);
-        setTimeout(() => {
-          alert(`Game over! Điểm của bạn: ${score}`);
-        }, 60);
-      }
-
-      // Drawing
-      function draw(gameOver = false) {
-        // clear
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // background grid (subtle)
-        ctx.save();
-        ctx.fillStyle = "#02121a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.restore();
-
-        // draw food
-        if (food) {
-          drawTile(food.x, food.y, "#ff6b6b");
-          // little shine
-          ctx.fillStyle = "rgba(255,255,255,0.18)";
-          ctx.fillRect(
-            food.x * TILE + TILE * 0.25,
-            food.y * TILE + TILE * 0.18,
-            TILE * 0.5,
-            TILE * 0.25
-          );
-        }
-
-        // draw snake
-        for (let i = 0; i < snake.length; i++) {
-          const p = snake[i];
-          if (i === 0) {
-            drawRoundTile(p.x, p.y, true);
-          } else {
-            drawRoundTile(p.x, p.y, false);
-          }
-        }
-
-        // if game over overlay
-        if (gameOver) {
-          ctx.fillStyle = "rgba(255,50,50,0.06)";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-      }
-
-      function drawTile(col, row, fill) {
-        ctx.fillStyle = fill;
-        ctx.fillRect(col * TILE, row * TILE, TILE, TILE);
-      }
-
-      function drawRoundTile(col, row, isHead) {
-        const x = col * TILE + TILE / 2;
-        const y = row * TILE + TILE / 2;
-        const r = TILE * 0.45;
-
-        // gradient
-        const g = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
-        if (isHead) {
-          g.addColorStop(0, "#34d399");
-          g.addColorStop(1, "#059669");
-        } else {
-          g.addColorStop(0, "#18a999");
-          g.addColorStop(1, "#047a68");
-        }
-        ctx.fillStyle = g;
-        roundRect(
-          ctx,
-          col * TILE + 1,
-          row * TILE + 1,
-          TILE - 2,
-          TILE - 2,
-          6,
-          true,
-          false
-        );
-
-        // subtle inner gloss
-        ctx.beginPath();
-        ctx.arc(x - r * 0.25, y - r * 0.5, r * 0.4, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255,255,255,0.06)";
-        ctx.fill();
-      }
-
-      // rounded rect helper
-      function roundRect(ctx, x, y, w, h, r, fill, stroke) {
-        if (typeof r === "undefined") r = 5;
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.arcTo(x + w, y, x + w, y + h, r);
-        ctx.arcTo(x + w, y + h, x, y + h, r);
-        ctx.arcTo(x, y + h, x, y, r);
-        ctx.arcTo(x, y, x + w, y, r);
-        ctx.closePath();
-        if (fill) ctx.fill();
-        if (stroke) ctx.stroke();
-      }
-
-      // Loop control
-      function startLoop() {
-        stopLoop();
-        if (!running) return;
-        moveInterval = setInterval(step, Math.round(1000 / speed));
-      }
-      function stopLoop() {
-        if (moveInterval) {
-          clearInterval(moveInterval);
-          moveInterval = null;
-        }
-      }
-
-      function setSpeed(v) {
-        speed = v;
-        speedLabel.textContent = speed;
-        speedSlider.value = speed;
-        if (running && !paused) {
-          startLoop();
-        }
-      }
-
-      // Inputs
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-          nextDir = { x: 0, y: -1 };
-        }
-        if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-          nextDir = { x: 0, y: 1 };
-        }
-        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-          nextDir = { x: -1, y: 0 };
-        }
-        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-          nextDir = { x: 1, y: 0 };
-        }
-        if (e.key === "p" || e.key === "P") {
-          togglePause();
-        }
-        if (e.key === "r" || e.key === "R") {
-          reset();
-        }
-      });
-
-      startBtn.addEventListener("click", () => {
-        if (!running) reset();
-        else {
-          paused = false;
-          startLoop();
-        }
-      });
-      pauseBtn.addEventListener("click", () => {
-        togglePause();
-      });
-      restartBtn.addEventListener("click", () => {
-        reset();
-      });
-      speedSlider.addEventListener("input", (e) => {
-        setSpeed(parseInt(e.target.value, 10));
-      });
-
-      function togglePause() {
-        if (!running) return;
-        paused = !paused;
-        if (paused) {
-          stopLoop();
-        } else {
-          startLoop();
-        }
-      }
-
-      // start paused with visible board
-      (function init() {
-        // draw initial empty board
-        ctx.fillStyle = "#02121a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#9fb4c6";
-        ctx.font = "14px Inter, Arial";
-        ctx.fillText('Nhấn "Bắt đầu" để chơi', 14, 24);
-        speedLabel.textContent = speed;
-      })();
-
-      // expose reset to global so R key after page load works
-      window.reset = reset;
-    </script>
+        <button id="add1">Add</button>
+        <input
+          type="text"
+          style="width: 300px"
+          placeholder="Nhập công việc bạn muốn thêm vào đây"
+          id="add_important"
+        />
+      </section>
+      <section>
+        <h2>2. Những công việc cấp bách</h2>
+        <ul id="lesstime">
+          <li>Thi giữa kỳ môn AI<input type="checkbox" /></li>
+          <li>Làm bài tập lớn<input type="checkbox" /></li>
+          <li>Báo cáo thực tập điện tử số<input type="checkbox" /></li>
+        </ul>
+        <button id="delete2">Delete</button>
+        <p style="display: inline-block">Xóa các công việc được đánh dấu</p>
+        <br />
+        <button id="add2">Add</button>
+        <input
+          id="add_capbach"
+          type="text"
+          style="width: 300px"
+          placeholder="Nhập công việc bạn muốn thêm vào đây"
+        />
+      </section>
+    </main>
+    <script src="./main.js"></script>
   </body>
 </html>
