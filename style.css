@@ -1,3 +1,15 @@
-input {
+section {
+  margin-bottom: 30px;
+}
+
+li {
+  margin: 5px 0;
+}
+
+/* Canh checkbox sát chữ và giữa dòng */
+li input[type="checkbox"] {
+  margin-left: 5px; /* khoảng cách rất nhỏ */
+}
+input[type="text"] {
   width: 300px;
 }
