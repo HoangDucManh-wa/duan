@@ -1,49 +1,58 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thử thách</title>
+    <title>Doccument</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <h1>Thử thách</h1>
-    <section>
-      <h2>1 Thử thách trước mắt</h2>
-      <ul id="ul1"></ul>
-      <button id="add1">Add</button>
-      <input
-        type="text"
-        placeholder="Nhập thử thách muốn thêm vào đây"
-        id="text1"
-      />
-      <br />
-      <button id="delete1">Delete</button>
-    </section>
-    <section>
-      <h2>2 Thử thách trung hạn</h2>
-      <ul id="ul2"></ul>
-      <button id="add2">Add</button>
-      <input
-        type="text"
-        placeholder="Nhập thử thách bạn muốn thêm vào đây"
-        id="text2"
-      />
-      <br />
-      <button id="delete2">Delete</button>
-    </section>
-    <section>
-      <h2>3 Thử thách dài hạn</h2>
-      <ul id="ul3"></ul>
-      <button id="add3">Add</button>
-      <input
-        type="text"
-        placeholder="Nhập thử thách muốn thêm vào đây"
-        id="text3"
-      />
-      <br />
-      <button id="delete3">Delete</button>
-    </section>
+    <header><h1>To-do-list</h1></header>
+    <main>
+      <section>
+        <h2>1. Danh sách những công việc quan trọng (có giá trị lâu dài):</h2>
+        <ul id="important">
+          <li>English<input type="checkbox" /></li>
+          <li>Programming<input type="checkbox" /></li>
+          <li>Brain Knowledge<input type="checkbox" /></li>
+          <li>Other skills<input type="checkbox" /></li>
+          <li>Tư duy logic<input type="checkbox" /></li>
+          <li>Linh hoạt<input type="checkbox" /></li>
+          <li>Sáng tạo<input type="checkbox" /></li>
+          <li>Liên kết vàng<input type="checkbox" /></li>
+          <li>Nhận thức bản thân<input type="checkbox" /></li>
+        </ul>
+        <button id="xoa_important">Delete</button>
+        <p style="display: inline-block">Xóa các công việc được đánh dấu</p>
+        <br />
+
+        <button id="add1">Add</button>
+        <input
+          type="text"
+          style="width: 300px"
+          placeholder="Nhập công việc bạn muốn thêm vào đây"
+          id="add_important"
+        />
+      </section>
+      <section>
+        <h2>2. Những công việc cấp bách</h2>
+        <ul id="lesstime">
+          <li>Thi giữa kỳ môn AI<input type="checkbox" /></li>
+          <li>Làm bài tập lớn<input type="checkbox" /></li>
+          <li>Báo cáo thực tập điện tử số<input type="checkbox" /></li>
+        </ul>
+        <button id="delete2">Delete</button>
+        <p style="display: inline-block">Xóa các công việc được đánh dấu</p>
+        <br />
+        <button id="add2">Add</button>
+        <input
+          id="add_capbach"
+          type="text"
+          style="width: 300px"
+          placeholder="Nhập công việc bạn muốn thêm vào đây"
+        />
+      </section>
+    </main>
     <script src="./main.js"></script>
   </body>
 </html>
